@@ -41,11 +41,10 @@ chain = [Chain(
          ) for _ in 1:dim_output]
 ps, st = Lux.setup(rng, chain)
 ps = ps |> ComponentArray |> f64
-st = st |> f64
 
 # Define training strategy
 strategy = GridTraining(0.1)
-discretization = PhysicsInformedNN(chain, strategy; init_params = ps, init_states = st)
+discretization = PhysicsInformedNN(chain, strategy; init_params = ps)
 
 # Define neural Lyapunov structure
 structure = PositiveSemiDefiniteStructure(dim_output)
@@ -70,8 +69,7 @@ prob = discretize(pde_system, discretization)
 res = Optimization.solve(prob, OptimizationOptimisers.Adam(); maxiters = 300)
 
 ###################### Get numerical numerical functions ######################
-net = discretization.phi
-θ = res.u.depvar
+net, θ = get_phi_and_params(res)
 
 V, V̇ = get_numerical_lyapunov_function(net, θ, structure, f, fixed_point)
 
@@ -125,7 +123,6 @@ chain = [Chain(
          ) for _ in 1:dim_output]
 ps, st = Lux.setup(rng, chain)
 ps = ps |> ComponentArray |> f64
-st = st |> f64
 nothing # hide
 ```
 
@@ -134,7 +131,7 @@ using NeuralPDE
 
 # Define training strategy
 strategy = GridTraining(0.1)
-discretization = PhysicsInformedNN(chain, strategy; init_params = ps, init_states = st)
+discretization = PhysicsInformedNN(chain, strategy; init_params = ps)
 nothing # hide
 ```
 
@@ -187,8 +184,7 @@ import Optimization, OptimizationOptimisers
 
 res = Optimization.solve(prob, OptimizationOptimisers.Adam(); maxiters = 300)
 
-net = discretization.phi
-θ = res.u.depvar
+net, θ = get_phi_and_params(res)
 ```
 
 We can use the result of the optimization problem to build the Lyapunov candidate as a Julia function, then sample on a finer grid than we trained on to find the estimated region of attraction.

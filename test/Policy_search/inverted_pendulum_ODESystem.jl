@@ -47,7 +47,7 @@ ps, st = Lux.setup(rng, chain)
 
 # Define neural network discretization
 strategy = QuasiRandomTraining(10000)
-discretization = PhysicsInformedNN(chain, strategy; init_params = ps, init_states = st)
+discretization = PhysicsInformedNN(chain, strategy; init_params = ps)
 
 # Define neural Lyapunov structure and corresponding minimization condition
 periodic_pos_def = function (state, fixed_point)
@@ -90,8 +90,7 @@ res = Optimization.solve(prob, Adam(0.05f0); maxiters = 300)
 
 ########################### Get numerical functions ###########################
 
-net = discretization.phi
-_θ = res.u.depvar
+net, _θ = get_phi_and_params(res)
 
 open_loop_pendulum_dynamics = ODEInputFunction(driven_pendulum)
 

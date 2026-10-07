@@ -2,7 +2,8 @@
 
     NeuralLyapunovBenchmarkLogger(losses, iterations)
 
-A simple logger for tracking the (full weighted) loss during training using NeuralPDE.
+A simple logger for tracking the (full weighted) loss during training, filled by the
+Optimization.jl callback returned by [`NeuralLyapunov.logging_callback`](@ref).
 
 # Fields
   - `losses::Vector{<:Real}`: A vector to store the loss values.
@@ -27,13 +28,21 @@ end
 NeuralLyapunovBenchmarkLogger{T}() where {T} = NeuralLyapunovBenchmarkLogger{T, Int64}()
 NeuralLyapunovBenchmarkLogger() = NeuralLyapunovBenchmarkLogger{Float64}()
 
-function NeuralPDE.logscalar(
-        logger::NeuralLyapunovBenchmarkLogger, scalar::Real,
-        name::AbstractString, step::Integer
-    )
-    if name == "weighted_loss/full_weighted_loss"
-        push!(logger.losses, scalar)
-        push!(logger.iterations, step)
+"""
+    logging_callback(logger, log_frequency)
+
+Return an Optimization.jl callback `(state, loss) -> false` that records `loss` in `logger`
+every `log_frequency` calls. The iteration count continues across every optimization run
+that uses the returned callback.
+"""
+function logging_callback(logger::NeuralLyapunovBenchmarkLogger, log_frequency::Integer)
+    iteration = Ref(0)
+    return function (state, loss, args...)
+        iteration[] += 1
+        if iteration[] % log_frequency == 0
+            push!(logger.losses, loss)
+            push!(logger.iterations, iteration[])
+        end
+        return false
     end
-    return nothing
 end

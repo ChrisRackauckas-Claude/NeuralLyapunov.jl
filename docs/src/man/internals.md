@@ -11,6 +11,7 @@ concrete types or on names omitted from this page.
 NeuralLyapunov.NeuralLyapunov
 NeuralLyapunov.phi_to_net
 NeuralLyapunov.NeuralLyapunovBenchmarkLogger
+NeuralLyapunov.logging_callback
 NeuralLyapunov.AbstractNeuralLyapunovStructure
 NeuralLyapunov.get_V
 NeuralLyapunov.get_V̇

@@ -183,8 +183,7 @@ end
         parameter_syms,
         endpoint_check,
         classifier,
-        init_params = ps,
-        init_states = st
+        init_params = ps
     )
 
     # Resulting controller should drive more states to equilibrium than not
@@ -351,7 +350,6 @@ end
     ]
     ps, st = Lux.setup(StableRNG(0), chain)
     ps = ps |> f64
-    st = st |> f64
 
     # Define neural network discretization
     strategy = QuasiRandomTraining(10000)
@@ -405,8 +403,7 @@ end
         fixed_point = upright_equilibrium,
         optimization_args,
         endpoint_check,
-        init_params = ps,
-        init_states = st
+        init_params = ps
     )
     cm = out.confusion_matrix
 

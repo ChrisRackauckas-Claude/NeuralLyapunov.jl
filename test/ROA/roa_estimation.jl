@@ -27,11 +27,10 @@ dim_output = 2
 chain = [MLP(dim_state, (dim_hidden, dim_hidden, 1), tanh) for _ in 1:dim_output]
 ps, st = Lux.setup(rng, chain)
 ps = ps |> ComponentArray |> f64
-st = st |> f64
 
 # Define training strategy
 strategy = QuadratureTraining()
-discretization = PhysicsInformedNN(chain, strategy; init_params = ps, init_states = st)
+discretization = PhysicsInformedNN(chain, strategy; init_params = ps)
 
 # Define neural Lyapunov structure and corresponding minimization condition
 structure = PositiveSemiDefiniteStructure(dim_output)
@@ -57,9 +56,11 @@ sym_prob = symbolic_discretize(pde_system, discretization)
 res = Optimization.solve(prob, Adam(); maxiters = 300)
 
 ###################### Get numerical numerical functions ######################
+phi, trained_params = get_phi_and_params(res)
+
 (V, V̇) = get_numerical_lyapunov_function(
-    discretization.phi,
-    res.u.depvar,
+    phi,
+    trained_params,
     structure,
     f,
     fixed_point

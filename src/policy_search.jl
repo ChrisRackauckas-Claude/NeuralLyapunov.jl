@@ -130,7 +130,7 @@ vectors.
 
 # Positional Arguments
   - `phi`: the neural network, represented as an `AbstractVector` of functions `phi(x, θ)`;
-    typically this is the `phi` field of the output of `NeuralPDE.PhysicsInformedNN`.
+    typically the first output of [`get_phi_and_params`](@ref).
   - `θ`: the parameters of the neural network. For each index `i` of `phi`, `θ[:φi]` should
     be the parameters of the network `phi[i]`. i.e., the full neural network output should
     be `[ phi(x, θ[:φi]) for i in eachindex(phi) ]`.

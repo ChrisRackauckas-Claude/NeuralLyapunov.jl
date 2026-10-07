@@ -54,7 +54,7 @@ ps, st = Lux.setup(rng, chain)
 
 # Define training strategy
 strategy = QuasiRandomTraining(1000)
-discretization = PhysicsInformedNN(chain, strategy; init_params = ps, init_states = st)
+discretization = PhysicsInformedNN(chain, strategy; init_params = ps)
 
 # Define neural Lyapunov structure and corresponding minimization condition
 structure = NonnegativeStructure(dim_output; δ = 1.0f-6)
@@ -80,8 +80,7 @@ prob = discretize(pde_system, discretization)
 res = Optimization.solve(prob, OptimizationOptimisers.Adam(); maxiters = 500)
 
 ###################### Get numerical numerical functions ######################
-net = discretization.phi
-θ = res.u.depvar
+net, θ = get_phi_and_params(res)
 
 V, V̇ = get_numerical_lyapunov_function(net, θ, structure, f, fixed_point; p)
 ```
@@ -142,7 +141,6 @@ To use `Float64` parameters instead, add the following lines:
 ```julia
 using ComponentArrays
 ps = ps |> ComponentArray |> f64
-st = st |> f64
 ```
 
 To train the model, we'll sample 1000 points from the domain using [`NeuralPDE.QuasiRandomTraining`](https://docs.sciml.ai/NeuralPDE/stable/manual/training_strategies/#NeuralPDE.QuasiRandomTraining).
@@ -153,7 +151,7 @@ using NeuralPDE
 
 # Define training strategy
 strategy = QuasiRandomTraining(1000)
-discretization = PhysicsInformedNN(chain, strategy; init_params = ps, init_states = st)
+discretization = PhysicsInformedNN(chain, strategy; init_params = ps)
 nothing # hide
 ```
 
@@ -210,8 +208,7 @@ import Optimization, OptimizationOptimisers
 
 res = Optimization.solve(prob, OptimizationOptimisers.Adam(); maxiters = 500)
 
-net = discretization.phi
-θ = res.u.depvar
+net, θ = get_phi_and_params(res)
 ```
 
 We can use the result of the optimization problem to build the Lyapunov candidate as a Julia function.

@@ -23,8 +23,8 @@ import SciMLBase
 using SciMLBase: ODEFunction, ODEInputFunction, ODEProblem, solve, EnsembleProblem,
     EnsembleDistributed, remake
 import Base.show
-using SymbolicIndexingInterface: SymbolCache, variable_symbols
-using NeuralPDE: PhysicsInformedNN, discretize, LogOptions
+using SymbolicIndexingInterface: SymbolCache, variable_symbols, getu
+using NeuralPDE: PhysicsInformedNN, discretize
 import NeuralPDE
 using OrdinaryDiffEqTsit5: AutoTsit5
 using OrdinaryDiffEqRosenbrock: Rosenbrock23
@@ -35,6 +35,7 @@ using Boltz.Layers: ShiftTo
 using StableRNGs: StableRNG
 using QuasiMonteCarlo: sample, LatinHypercubeSample
 using DataFrames: DataFrame
+using ComponentArrays: ComponentArray
 using MatrixEquations: lyapc, arec
 using PrecompileTools: @compile_workload, @setup_workload
 
@@ -52,6 +53,7 @@ include("decrease_conditions.jl")
 include("decrease_conditions_RoA_aware.jl")
 include("NeuralLyapunovPDESystem.jl")
 include("numerical_lyapunov_functions.jl")
+include("neuralpde_solution.jl")
 include("local_lyapunov.jl")
 include("policy_search.jl")
 include("logger.jl")
@@ -60,7 +62,8 @@ include("lux_structures.jl")
 
 # Lyapunov function structures
 export NeuralLyapunovStructure, NeuralLyapunovControlStructure, NoAdditionalStructure,
-    NonnegativeStructure, PositiveSemiDefiniteStructure, get_numerical_lyapunov_function
+    NonnegativeStructure, PositiveSemiDefiniteStructure, get_numerical_lyapunov_function,
+    get_phi_and_params
 
 # Lux structures
 export AdditiveLyapunovNet, MultiplicativeLyapunovNet, SoSPooling,

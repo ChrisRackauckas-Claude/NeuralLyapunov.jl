@@ -93,8 +93,7 @@ benchmarking_results = benchmark(
     state_syms,
     parameter_syms,
     endpoint_check,
-    init_params = ps, 
-    init_states = st
+    init_params = ps
 )
 ```
 
@@ -215,8 +214,7 @@ benchmarking_results = benchmark(
     parameter_syms,
     ensemble_alg = EnsembleSerial(),
     endpoint_check,
-    init_params = ps, 
-    init_states = st,
+    init_params = ps,
     log_frequency = 1
 );
 nothing # hide

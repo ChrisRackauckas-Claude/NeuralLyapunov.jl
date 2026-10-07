@@ -55,11 +55,10 @@ chain = [Chain(
          ) for _ in 1:dim_output]
 ps, st = Lux.setup(rng, chain)
 ps = ps |> ComponentArray |> f64
-st = st |> f64
 
 # Define neural network discretization
 strategy = QuasiRandomTraining(5000)
-discretization = PhysicsInformedNN(chain, strategy; init_params = ps, init_states = st)
+discretization = PhysicsInformedNN(chain, strategy; init_params = ps)
 
 # Define neural Lyapunov structure
 periodic_pos_def = function (state, fixed_point)
@@ -98,13 +97,12 @@ prob = discretize(pde_system, discretization)
 ########################## Solve OptimizationProblem ##########################
 
 res = Optimization.solve(prob, OptimizationOptimisers.Adam(0.01); maxiters = 300)
-prob = Optimization.remake(prob, u0 = res.u)
+prob = Optimization.remake(prob, u0 = res.original_sol.u)
 res = Optimization.solve(prob, OptimizationOptimisers.Adam(0.001); maxiters = 300)
 
 ###################### Get numerical numerical functions ######################
 
-net = discretization.phi
-_θ = res.u.depvar
+net, _θ = get_phi_and_params(res)
 
 open_loop_pendulum_dynamics = ODEInputFunction(pendulum)
 params = setdiff(parameters(pendulum), unbound_inputs(pendulum))
@@ -185,7 +183,6 @@ chain = [Chain(
          ) for _ in 1:dim_output]
 ps, st = Lux.setup(rng, chain)
 ps = ps |> ComponentArray |> f64
-st = st |> f64
 nothing #hide
 ```
 
@@ -194,7 +191,7 @@ using NeuralPDE
 
 # Define neural network discretization
 strategy = QuasiRandomTraining(5000)
-discretization = PhysicsInformedNN(chain, strategy; init_params = ps, init_states = st)
+discretization = PhysicsInformedNN(chain, strategy; init_params = ps)
 nothing # hide
 ```
 
@@ -261,11 +258,10 @@ using Optimization: solve, remake
 using OptimizationOptimisers: Adam
 
 res = solve(prob, Adam(0.01); maxiters = 300)
-prob = remake(prob, u0 = res.u)
+prob = remake(prob, u0 = res.original_sol.u)
 res = solve(prob, Adam(0.001); maxiters = 300)
 
-net = discretization.phi
-_θ = res.u.depvar
+net, _θ = get_phi_and_params(res)
 ```
 
 We can use the result of the optimization problem to build the Lyapunov candidate as a Julia function, as well as extract our controller, using the [`get_policy`](@ref) function.

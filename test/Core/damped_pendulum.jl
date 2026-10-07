@@ -50,11 +50,10 @@ chain = [
 ]
 ps, st = Lux.setup(rng, chain)
 ps = ps |> ComponentArray |> f64
-st = st |> f64
 
 # Define neural network discretization
 strategy = QuasiRandomTraining(2000)
-discretization = PhysicsInformedNN(chain, strategy; init_params = ps, init_states = st)
+discretization = PhysicsInformedNN(chain, strategy; init_params = ps)
 
 # Define neural Lyapunov structure and corresponding minimization condition
 periodic_pos_def = function (state, fixed_point)
@@ -89,14 +88,16 @@ prob = discretize(pde_system, discretization)
 ########################## Solve OptimizationProblem ##########################
 
 res = Optimization.solve(prob, Adam(0.1); maxiters = 500)
-prob = Optimization.remake(prob, u0 = res.u)
+prob = Optimization.remake(prob, u0 = res.original_sol.u)
 res = Optimization.solve(prob, Adam(0.001); maxiters = 500)
 
 ###################### Get numerical numerical functions ######################
 
+phi, trained_params = get_phi_and_params(res)
+
 (V, V̇) = get_numerical_lyapunov_function(
-    discretization.phi,
-    res.u.depvar,
+    phi,
+    trained_params,
     structure,
     f,
     zeros(length(bounds));
